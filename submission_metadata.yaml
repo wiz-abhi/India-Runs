@@ -6,20 +6,20 @@
 team_name: "IndiaRanks"
 
 primary_contact:
-  name: "Abhishek"
-  email: "abhishek@example.com"
-  phone: "+91-0000000000"
+  name: "Abhishek Gupta"
+  email: "abhishekg8318@gmail.com"
+  phone: "+919026542797"
 
 team_members:
-  - name: "Abhishek"
-    email: "abhishek@example.com"
+  - name: "Abhishek Gupta"
+    email: "abhishekg8318@gmail.com"
     role: "AI Engineer"
 
 # ============================================================================
 # Code and reproducibility
 # ============================================================================
-github_repo: "https://github.com/abhis/indiaruns"
-sandbox_link: "https://github.com/abhis/indiaruns"
+github_repo: "https://github.com/wiz-abhi/indiaruns"
+sandbox_link: "https://github.com/wiz-abhi/indiaruns"
 
 reproduce_command: "python rank.py"
 
