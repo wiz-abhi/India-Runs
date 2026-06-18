@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 
 from src.embeddings import EmbeddingEngine
-from src.explainer import generate_flags, generate_reasons
+from src.explainer import ExplainerEngine
 from src.jd_parser import JDParser, JobDescription
 from src.profile_parser import CandidateProfile, ProfileParser
 from src.signals import SignalComputer, SignalScores
@@ -105,13 +105,19 @@ class CandidateRanker:
         logger.info("Computing signals for %d candidates …", len(profiles))
         candidates: List[RankedCandidate] = []
 
+        explainer = ExplainerEngine()
         for i, profile in enumerate(profiles):
             sem_sim = float(similarities[i])
             scores: SignalScores = self._signal_computer.compute_all(
                 profile, jd, sem_sim
             )
-            reasons = generate_reasons(profile, jd, scores, rank=0)
-            flags = generate_flags(profile, jd, scores)
+            # The UI needs a list of top 3 reasons to display nicely
+            # We'll split our single paragraph or just wrap it in a list
+            reason = explainer.explain_rank(profile, scores)
+            reasons = [r.strip() for r in reason.split(". ") if r.strip()]
+            if not reasons:
+                reasons = ["Candidate meets baseline criteria"]
+            flags = "" # No separate flags in the new ExplainerEngine
 
             rc = RankedCandidate(
                 rank=0,  # assigned after sorting
