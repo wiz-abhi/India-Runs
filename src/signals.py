@@ -255,7 +255,7 @@ class SignalComputer:
 
         # Availability can re-rank technically credible candidates, but should
         # never manufacture relevance or erase it entirely.
-        return clamp(mult, lo=0.65, hi=1.25)
+        return clamp(mult, lo=0.65, hi=1.0)
 
     def career_evidence_score(self, profile: CandidateProfile) -> float:
         """Score JD meaning from role history rather than skill keywords."""

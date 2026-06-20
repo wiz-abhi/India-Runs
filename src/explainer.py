@@ -20,6 +20,7 @@ class ExplainerEngine:
     def explain_rank(self, profile: CandidateProfile, scores: SignalScores, jd: JobDescription = None, rank: int = None, total: int = 100) -> str:
         """Generate a cohesive paragraph explaining the candidate's rank specifically."""
         reasons = []
+        is_borderline = rank is not None and total and (rank / total) > 0.70
 
         title = profile.job_titles[0] if profile.job_titles else "Professional"
         company = profile.companies[0] if profile.companies else "Unknown Company"
@@ -36,18 +37,19 @@ class ExplainerEngine:
             matched_req = [s for s in jd.required_skills if _canonicalize_skill(s) in c_canonical]
             
             if len(matched_req) >= 3:
-                reasons.append(f"Strong skill alignment including {', '.join(matched_req[:3])}.")
+                qualifier = "Some skill overlap" if is_borderline else "Strong skill alignment"
+                reasons.append(f"{qualifier} including {', '.join(matched_req[:3])}.")
             elif len(matched_req) > 0:
                 reasons.append(f"Partial skill match including {', '.join(matched_req)}.")
 
         # 3. Semantic / Domain
         sem = scores.semantic_similarity
-        if sem >= 0.70:
+        if sem >= 0.70 and not is_borderline:
             reasons.append("High semantic relevance to the ranking/retrieval domain.")
         elif sem >= 0.50:
             reasons.append("Moderate semantic match to the core JD.")
 
-        if scores.career_evidence >= 0.7:
+        if scores.career_evidence >= 0.7 and not is_borderline:
             reasons.append("Career history shows strong production retrieval, ranking, and evaluation evidence.")
         elif scores.career_evidence >= 0.4:
             reasons.append("Career history contains relevant applied search or ranking evidence.")
