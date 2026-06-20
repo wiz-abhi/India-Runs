@@ -98,17 +98,16 @@ def run_ranking(cache_path: str, output_path: str):
     explainer = ExplainerEngine()
     results = []
 
-    max_score = top_100[0][0] if top_100 else 1.0
     for rank, (score, cid, profile, scores) in enumerate(top_100, start=1):
         # Generate reasoning based on the new SignalScores structure
-        reasoning = explainer.explain_rank(profile, scores, jd)
+        reasoning = explainer.explain_rank(profile, scores, jd, rank=rank, total=len(top_100))
         # Format the reasoning properly to fit in CSV (no newlines in the cell)
         reasoning = reasoning.replace("\n", " ").replace("\r", "").strip()
         results.append(
             {
                 "candidate_id": cid,
                 "rank": rank,
-                "score": f"{score / max_score:.6f}",
+                "score": f"{score:.6f}",
                 "reasoning": reasoning,
             }
         )

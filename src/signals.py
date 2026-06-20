@@ -160,7 +160,7 @@ class SignalComputer:
             + w.get("product_company_fit", 0.07) * scores.product_company_fit
             + w.get("work_mode_fit", 0.02) * scores.work_mode_fit
         )
-        scores.base_score = base
+        scores.base_score = clamp(base, 0.0, 1.0)
 
         # Behavioral multiplier
         behav_mult = self.behavioral_multiplier(profile)
@@ -176,7 +176,7 @@ class SignalComputer:
             base * behav_mult * services_only_penalty * title_penalty
             * scores.profile_trust
         )
-        scores.composite_score = max(0.0, final_score)
+        scores.composite_score = clamp(final_score, 0.0, 1.0)
 
         return scores
 

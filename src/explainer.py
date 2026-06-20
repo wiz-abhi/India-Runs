@@ -17,7 +17,7 @@ logger = get_logger(__name__)
 
 
 class ExplainerEngine:
-    def explain_rank(self, profile: CandidateProfile, scores: SignalScores, jd: JobDescription = None) -> str:
+    def explain_rank(self, profile: CandidateProfile, scores: SignalScores, jd: JobDescription = None, rank: int = None, total: int = 100) -> str:
         """Generate a cohesive paragraph explaining the candidate's rank specifically."""
         reasons = []
 
@@ -93,6 +93,13 @@ class ExplainerEngine:
 
         if scores.profile_trust < 0.7:
             reasons.append("Warning: Some skill claims have weak or inconsistent supporting evidence.")
+
+        if rank is not None:
+            percentile = rank / total
+            if percentile > 0.85:
+                reasons.append("Adjacent fit — included as filler given engagement signals; not a strong primary match.")
+            elif percentile > 0.70:
+                reasons.append("Reasonable but secondary fit relative to top-ranked candidates.")
 
         # Combine into a single string
         return " ".join(reasons)
