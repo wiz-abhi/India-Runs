@@ -43,8 +43,6 @@ pipeline.log
 .DS_Store
 Thumbs.db
 
-# Streamlit
-.streamlit/
 
 # Jupyter
 .ipynb_checkpoints/
