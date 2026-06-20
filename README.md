@@ -92,25 +92,26 @@ pip install -r requirements.txt
 ### 2. Precompute Embeddings
 
 ```bash
-python precompute.py
+python precompute.py --candidates data/raw/candidates.jsonl --out data/processed/candidates_cache.pkl
 ```
-*This parses all 100K JSONL candidates and saves embeddings to `data/processed/candidates_cache.pkl`. Note: this takes about 45 minutes on a standard CPU.*
-
-Re-run this step whenever profile parsing or embedding text changes; caches are intentionally not committed.
+*This parses all 100K JSONL candidates and saves embeddings to the cache. Note: this takes about 45 minutes on a standard CPU.*
 
 ### 3. Rank and Generate Submission
 
 ```bash
-python rank.py
+python rank.py --candidates ./candidates.jsonl --out ./submission.csv
 ```
-*This loads the cache, compares candidates against the hackathon JD, computes all Redrob signals, runs the Honeypot Detector, generates reasoning, and outputs a 100-row `submission.csv`.*
+*This loads the cache, compares candidates against the hackathon JD, computes all 12 Redrob signals, runs the Honeypot Detector, generates reasoning, and outputs a 100-row `submission.csv`.*
 
-### 4. Run the UI Demo (Bonus)
+### 4. Live Sandbox Demo
 
+You can view the full ranking system running live in our **[Streamlit Cloud Sandbox](https://india-runs-hack.streamlit.app)**.
+
+To run it locally:
 ```bash
-python -m streamlit run app/demo.py --server.fileWatcherType none
+streamlit run app/demo.py
 ```
-*A beautiful interactive dashboard to visualize the top candidates, their semantic match, signal breakdown, and generated reasoning.*
+*A beautiful interactive dashboard to visualize the top candidates, their semantic match, signal breakdown, honeypot detection, and generated reasoning.*
 
 ---
 
