@@ -48,7 +48,7 @@ html, body, [class*="css"] {
 
 /* ── Global dark background ── */
 .stApp {
-    background: linear-gradient(160deg, #080615 0%, #0d0b2a 30%, #151235 60%, #0d0a20 100%);
+    background: linear-gradient(160deg, #09090b 0%, #0c0c0e 30%, #111113 60%, #09090b 100%);
 }
 
 /* ── Animated hero ── */
@@ -61,7 +61,7 @@ html, body, [class*="css"] {
     font-size: 3.2rem;
     font-weight: 900;
     letter-spacing: -1px;
-    background: linear-gradient(135deg, #667eea 0%, #9b59b6 30%, #f093fb 60%, #667eea 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #e8c547 35%, #ffffff 65%, #e8c547 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -73,16 +73,16 @@ html, body, [class*="css"] {
     100% { background-position: 200% center; }
 }
 .hero-subtitle {
-    color: rgba(160, 160, 200, 0.9);
+    color: rgba(200, 200, 210, 0.85);
     font-size: 1.05rem;
     font-weight: 400;
     letter-spacing: 0.3px;
 }
 .hero-badge {
     display: inline-block;
-    background: rgba(102, 126, 234, 0.12);
-    border: 1px solid rgba(102, 126, 234, 0.25);
-    color: #98a8f8;
+    background: rgba(232, 197, 71, 0.08);
+    border: 1px solid rgba(232, 197, 71, 0.25);
+    color: #e8c547;
     font-size: 0.72rem;
     font-weight: 600;
     padding: 4px 14px;
@@ -94,8 +94,8 @@ html, body, [class*="css"] {
 
 /* ── Glassmorphism metric cards ── */
 .glass-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
     border-radius: 18px;
     padding: 1.3rem 1.5rem;
     backdrop-filter: blur(16px);
@@ -109,26 +109,26 @@ html, body, [class*="css"] {
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(102,126,234,0.5), transparent);
+    background: linear-gradient(90deg, transparent, rgba(232,197,71,0.5), transparent);
     opacity: 0;
     transition: opacity 0.3s;
 }
 .glass-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(102, 126, 234, 0.2);
-    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(0,0,0,0.3);
+    border-color: rgba(232, 197, 71, 0.2);
+    box-shadow: 0 12px 40px rgba(232, 197, 71, 0.06), 0 4px 12px rgba(0,0,0,0.4);
 }
 .glass-card:hover::before { opacity: 1; }
 .glass-value {
     font-size: 2rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #fff, #c0c0e8);
+    background: linear-gradient(135deg, #ffffff, #e0e0e0);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 .glass-label {
     font-size: 0.72rem;
-    color: rgba(136, 136, 170, 0.9);
+    color: rgba(160, 160, 165, 0.9);
     text-transform: uppercase;
     letter-spacing: 1.2px;
     font-weight: 600;
@@ -151,15 +151,15 @@ html, body, [class*="css"] {
 }
 .cand-card:hover {
     background: rgba(255,255,255,0.05);
-    border-color: rgba(102, 126, 234, 0.25);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    border-color: rgba(232, 197, 71, 0.2);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.3);
 }
 .cand-card.top-3 {
     border-left: 3px solid;
 }
-.cand-card.rank-1-card { border-left-color: #FFD700; }
-.cand-card.rank-2-card { border-left-color: #C0C0C0; }
-.cand-card.rank-3-card { border-left-color: #CD7F32; }
+.cand-card.rank-1-card { border-left-color: #e8c547; }
+.cand-card.rank-2-card { border-left-color: #a0a0a5; }
+.cand-card.rank-3-card { border-left-color: #c78a50; }
 
 /* ── Honeypot card ── */
 .hp-card {
@@ -183,10 +183,10 @@ html, body, [class*="css"] {
     font-size: 0.9rem;
     flex-shrink: 0;
 }
-.rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #1a1a2e; }
-.rank-2 { background: linear-gradient(135deg, #C0C0C0, #8E8E8E); color: #1a1a2e; }
-.rank-3 { background: linear-gradient(135deg, #CD7F32, #A0522D); color: #fff; }
-.rank-n { background: rgba(102, 126, 234, 0.15); color: #8898f8; border: 1px solid rgba(102,126,234,0.2); }
+.rank-1 { background: linear-gradient(135deg, #e8c547, #d4a017); color: #111; }
+.rank-2 { background: linear-gradient(135deg, #b0b0b5, #808085); color: #111; }
+.rank-3 { background: linear-gradient(135deg, #c78a50, #a06030); color: #fff; }
+.rank-n { background: rgba(255,255,255,0.06); color: #ccc; border: 1px solid rgba(255,255,255,0.1); }
 
 /* ── Score bar ── */
 .score-track {
@@ -199,7 +199,7 @@ html, body, [class*="css"] {
 .score-fill {
     height: 100%;
     border-radius: 8px;
-    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    background: linear-gradient(90deg, #e8c547, #d4a017, #e8c547);
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -212,10 +212,10 @@ html, body, [class*="css"] {
     margin: 2px 4px 2px 0;
     font-weight: 500;
 }
-.tag-skill { background: rgba(102,126,234,0.12); color: #98a8f8; }
-.tag-warn { background: rgba(255,107,107,0.12); color: #ff8888; }
-.tag-hp { background: rgba(255,50,50,0.15); color: #ff5555; font-weight: 600; }
-.tag-good { background: rgba(67,233,123,0.12); color: #6fd89c; }
+.tag-skill { background: rgba(232,197,71,0.1); color: #e8c547; }
+.tag-warn { background: rgba(255,107,107,0.1); color: #ff8888; }
+.tag-hp { background: rgba(255,50,50,0.12); color: #ff5555; font-weight: 600; }
+.tag-good { background: rgba(67,233,123,0.1); color: #6fd89c; }
 
 /* ── Signal mini-bars ── */
 .sig-row { display: flex; align-items: center; margin-bottom: 5px; gap: 8px; }
@@ -226,11 +226,11 @@ html, body, [class*="css"] {
 
 /* ── Sidebar ── */
 section[data-testid="stSidebar"] {
-    background: rgba(8,6,21,0.97) !important;
-    border-right: 1px solid rgba(255,255,255,0.06);
+    background: rgba(9,9,11,0.98) !important;
+    border-right: 1px solid rgba(255,255,255,0.05);
 }
 section[data-testid="stSidebar"] .stMarkdown h3 {
-    background: linear-gradient(135deg, #667eea, #f093fb);
+    background: linear-gradient(135deg, #ffffff, #e8c547);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -238,7 +238,7 @@ section[data-testid="stSidebar"] .stMarkdown h3 {
 /* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
     gap: 0;
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.02);
     border-radius: 12px;
     padding: 4px;
     border: 1px solid rgba(255,255,255,0.06);
@@ -250,7 +250,7 @@ section[data-testid="stSidebar"] .stMarkdown h3 {
     padding: 8px 20px;
 }
 .stTabs [aria-selected="true"] {
-    background: rgba(102,126,234,0.15) !important;
+    background: rgba(232,197,71,0.1) !important;
 }
 
 /* ── Info panels ── */
@@ -260,13 +260,13 @@ section[data-testid="stSidebar"] .stMarkdown h3 {
     border-radius: 16px;
     padding: 1.5rem;
 }
-.info-panel h4 { color: #667eea; margin-bottom: 0.5rem; font-size: 1rem; }
-.info-panel p { color: rgba(160,160,200,0.85); font-size: 0.85rem; line-height: 1.7; }
+.info-panel h4 { color: #e8c547; margin-bottom: 0.5rem; font-size: 1rem; }
+.info-panel p { color: rgba(200,200,205,0.85); font-size: 0.85rem; line-height: 1.7; }
 
 /* ── Divider ── */
 .glow-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(102,126,234,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(232,197,71,0.2), transparent);
     margin: 1.5rem 0;
     border: none;
 }
@@ -281,7 +281,7 @@ section[data-testid="stSidebar"] .stMarkdown h3 {
     transition: all 0.3s;
 }
 .pipe-step:hover {
-    border-color: rgba(102,126,234,0.25);
+    border-color: rgba(232,197,71,0.2);
     background: rgba(255,255,255,0.05);
 }
 .pipe-num {
@@ -290,8 +290,8 @@ section[data-testid="stSidebar"] .stMarkdown h3 {
     justify-content: center;
     width: 30px; height: 30px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: #fff;
+    background: linear-gradient(135deg, #e8c547, #d4a017);
+    color: #111;
     font-weight: 700;
     font-size: 0.8rem;
     margin-bottom: 6px;
@@ -331,18 +331,18 @@ def _signal_bar(label: str, value: float, color: str) -> str:
 
 
 SIGNAL_CONFIG = {
-    "career_evidence":     {"label": "Career Evidence",   "color": "#43e97b"},
-    "semantic_similarity": {"label": "Semantic Match",    "color": "#667eea"},
-    "skill_evidence":      {"label": "Skill Evidence",    "color": "#764ba2"},
-    "skill_match":         {"label": "Skill Match",       "color": "#f093fb"},
-    "experience_fit":      {"label": "Experience Fit",    "color": "#38f9d7"},
-    "career_stability":    {"label": "Career Stability",  "color": "#fee140"},
-    "product_company_fit": {"label": "Product Co. Fit",   "color": "#fa709a"},
-    "domain_alignment":    {"label": "Domain Alignment",  "color": "#30cfd0"},
-    "location_fit":        {"label": "Location Fit",      "color": "#a18cd1"},
-    "culture_fit":         {"label": "Culture Fit",       "color": "#ffecd2"},
-    "skill_recency":       {"label": "Skill Depth",       "color": "#fcb69f"},
-    "work_mode_fit":       {"label": "Work Mode Fit",     "color": "#84fab0"},
+    "career_evidence":     {"label": "Career Evidence",   "color": "#e8c547"},
+    "semantic_similarity": {"label": "Semantic Match",    "color": "#ffffff"},
+    "skill_evidence":      {"label": "Skill Evidence",    "color": "#d4a017"},
+    "skill_match":         {"label": "Skill Match",       "color": "#c0c0c5"},
+    "experience_fit":      {"label": "Experience Fit",    "color": "#6fd89c"},
+    "career_stability":    {"label": "Career Stability",  "color": "#e8c547"},
+    "product_company_fit": {"label": "Product Co. Fit",   "color": "#c78a50"},
+    "domain_alignment":    {"label": "Domain Alignment",  "color": "#b0b0b5"},
+    "location_fit":        {"label": "Location Fit",      "color": "#d4a017"},
+    "culture_fit":         {"label": "Culture Fit",       "color": "#e0d5b0"},
+    "skill_recency":       {"label": "Skill Depth",       "color": "#c0c0c5"},
+    "work_mode_fit":       {"label": "Work Mode Fit",     "color": "#6fd89c"},
     "profile_trust":       {"label": "Profile Trust",     "color": "#ff6b6b"},
 }
 
@@ -658,9 +658,9 @@ if "results" in st.session_state:
                         fig.add_trace(go.Scatterpolar(
                             r=values_closed, theta=labels_closed,
                             fill="toself",
-                            fillcolor="rgba(102, 126, 234, 0.12)",
-                            line=dict(color="#667eea", width=2),
-                            marker=dict(size=5, color="#764ba2"),
+                            fillcolor="rgba(232, 197, 71, 0.12)",
+                            line=dict(color="#e8c547", width=2),
+                            marker=dict(size=5, color="#d4a017"),
                         ))
                         fig.update_layout(
                             polar=dict(
@@ -691,8 +691,8 @@ if "results" in st.session_state:
         fig_dist.add_trace(go.Histogram(
             x=valid_scores, nbinsx=40,
             marker=dict(
-                color="rgba(102, 126, 234, 0.6)",
-                line=dict(color="#667eea", width=1),
+                color="rgba(232, 197, 71, 0.6)",
+                line=dict(color="#e8c547", width=1),
             ),
             name="Valid Candidates",
         ))
@@ -738,8 +738,8 @@ if "results" in st.session_state:
             fig_compare = go.Figure()
             fig_compare.add_trace(go.Scatterpolar(
                 r=top_vals + [top_vals[0]], theta=labels + [labels[0]],
-                fill="toself", fillcolor="rgba(102,126,234,0.15)",
-                line=dict(color="#667eea", width=2.5), name="Top 10",
+                fill="toself", fillcolor="rgba(232,197,71,0.15)",
+                line=dict(color="#e8c547", width=2.5), name="Top 10",
             ))
             fig_compare.add_trace(go.Scatterpolar(
                 r=all_vals + [all_vals[0]], theta=labels + [labels[0]],
@@ -775,7 +775,7 @@ if "results" in st.session_state:
                     y=[e[1] for e in top15_exp],
                     marker=dict(
                         color=[e[1] for e in top15_exp],
-                        colorscale=[[0, "#667eea"], [1, "#f093fb"]],
+                        colorscale=[[0, "#b0b0b5"], [1, "#e8c547"]],
                     ),
                 ))
                 fig_exp.update_layout(
