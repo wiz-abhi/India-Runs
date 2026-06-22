@@ -1075,8 +1075,8 @@ elif "results" not in st.session_state:
         st.markdown("""
         <div class="glass-card" style="text-align:center;">
             <div style="font-size:2rem;margin-bottom:8px;">🍯</div>
-            <div class="glass-value" style="font-size:1.4rem;">113</div>
-            <div class="glass-label">Honeypots Detected</div>
+            <div class="glass-value" style="font-size:1.4rem;">7</div>
+            <div class="glass-label">Honeypot Rules</div>
         </div>""", unsafe_allow_html=True)
     with f4:
         st.markdown("""
