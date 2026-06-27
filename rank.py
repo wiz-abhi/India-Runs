@@ -1,3 +1,7 @@
+import os
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
 import argparse
 import csv
 import pickle
@@ -30,15 +34,17 @@ def run_ranking(cache_path: str, output_path: str):
         domain=target_jd_cfg.get("domain", "data_science"),
         culture_signals=target_jd_cfg.get("culture_signals", []),
     )
-    jd_embedding_text = (
-        "Senior applied AI engineer who has shipped production retrieval, ranking, "
-        "recommendation or search systems to real users. Evidence of evaluation with "
-        "NDCG, MRR, MAP or A/B tests; strong Python and product ownership. Skills: "
-        + ", ".join(jd.required_skills)
-        + " Experience: "
-        + str(jd.min_experience_years)
-        + " years."
-    )
+    jd_embedding_text = """
+Senior AI/ML Engineer — Production Retrieval, Ranking and Recommendation Systems.
+Seeking engineers who have shipped embedding-based retrieval, semantic search, or
+recommendation systems to real users at scale. Must demonstrate: production deployment
+of dense retrieval or hybrid search (Pinecone, Weaviate, Qdrant, Milvus, FAISS,
+Elasticsearch); evaluation with NDCG, MRR, MAP, A/B testing, offline-to-online
+correlation; handling embedding drift, index refresh, retrieval quality regression.
+Strong Python. Product company background preferred. 5-9 years applied ML experience.
+Location: Pune or Noida preferred. Immediate to 30-day notice. NLP/IR domain expertise.
+LTR, fine-tuning (LoRA/QLoRA/PEFT), or distributed systems a strong plus.
+"""
 
     print(f"Loading precomputed cache from {cache_path}...")
     with open(cache_path, "rb") as f:
@@ -60,14 +66,32 @@ def run_ranking(cache_path: str, output_path: str):
     prof_norms = np.asarray(embeddings, dtype=np.float32)
     semantic_scores = prof_norms @ jd_norm
 
-    # TWO-STAGE RETRIEVAL: Only process the top 2000 candidates by semantic similarity
-    # This prevents running 12 complex signals on all 100,000 candidates
-    TOP_K = min(2000, len(profiles))
-    print(f"Filtering top {TOP_K} candidates by semantic similarity for full scoring...")
+    from rank_bm25 import BM25Okapi
+
+    # BM25 query: key terms from the JD
+    BM25_QUERY_TERMS = [
+        "retrieval", "ranking", "embedding", "semantic", "search", "recommendation",
+        "vector", "production", "deployed", "ndcg", "mrr", "evaluation", "faiss",
+        "pinecone", "qdrant", "weaviate", "elasticsearch", "pipeline", "scale"
+    ]
+
+    def get_description_text(profile):
+        return " ".join(profile.career_history_desc).lower()
+
+    print("Building BM25 index over career descriptions...")
+    corpus = [get_description_text(p).split() for p in profiles]
+    bm25 = BM25Okapi(corpus)
+    bm25_scores = bm25.get_scores(BM25_QUERY_TERMS)
+
+    # TWO-STAGE RETRIEVAL: Combine semantic similarity + lexical matching
+    TOP_K = 2500
+    print(f"Filtering top {TOP_K} semantic and {TOP_K} lexical candidates...")
     
     # argpartition is faster than argsort for just getting top K
-    # Negate semantic_scores to sort descending
-    top_k_indices = np.argpartition(-semantic_scores, TOP_K - 1)[:TOP_K]
+    semantic_top = set(np.argpartition(-semantic_scores, min(TOP_K, len(profiles)) - 1)[:min(TOP_K, len(profiles))])
+    bm25_top = set(np.argpartition(-bm25_scores, min(TOP_K, len(profiles)) - 1)[:min(TOP_K, len(profiles))])
+    top_k_indices = list(semantic_top | bm25_top)
+    print(f"Union shortlist size: {len(top_k_indices)} candidates")
     
     print("Computing behavioral signals and final composites for shortlist...")
     computer = SignalComputer()

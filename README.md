@@ -10,7 +10,7 @@ Traditional keyword filters miss the right person. The dataset is adversarial by
 
 Our pipeline composes multiple signals into one explainable score per candidate. No single signal is trusted alone.
 
-1. **Two-Stage Semantic Retrieval.** We compute semantic similarity between the JD and all 100,000 candidates. To fit within the strict 5-minute CPU budget, we use vectorized NumPy dot products (`prof_norms @ jd_norm`) to instantly isolate a shortlist of the top 2,000 best semantic matches.
+1. **Two-Stage Retrieval (Semantic + Lexical).** We compute semantic similarity between the JD and all 100,000 candidates using vectorized NumPy dot products, and merge it with a BM25 lexical retrieval pass over career descriptions. This dual approach isolates a combined shortlist of the top ~5,000 best matches.
 2. **Career & Skill Evidence Validation.** For the shortlisted candidates, we evaluate career evidence (shipped retrieval/ranking systems, production operation) and validate skill claims using proficiency, duration, endorsements, and Redrob assessment scores.
 3. **Behavioral Signal Engine.** We integrate 12 specific Redrob signals to calculate a bounded behavioral multiplier, evaluating notice period, GitHub score, profile completeness, interview completion rate, and responsiveness.
 4. **India-Specific Heuristics.** Strict penalties are applied for services-only experience (per JD disqualifiers) and bonuses for location alignment (Pune/Noida preference).
@@ -24,10 +24,10 @@ Measured on the full **100,000**-candidate pool:
 
 | Metric | Value |
 |---|---|
-| Total rank time | **35.02s** — **well under the 300s budget** |
+| Total rank time | **~35-90s depending on hardware** (well under the 300s budget) |
 | Compute | CPU-only, zero network calls at rank time |
 | Honeypots caught | **80+** (0 honeypots in the top 100) |
-| Shortlist scored in detail | **2,000** candidates |
+| Shortlist scored in detail | **~5,000** candidates |
 | Hardware used | Standard CPU (No GPU required online) |
 | Offline precompute (one-time) | **~45 min** for 100K on CPU |
 
@@ -49,6 +49,7 @@ pip install -r requirements.txt
 ```bash
 # 2. OFFLINE precompute — run ONCE. Downloads the embedding model and builds
 #    data/processed/candidates_cache.pkl. No time limit.
+#    The model is downloaded HERE, not during the timed rank step.
 python precompute.py --candidates data/raw/candidates.jsonl --out data/processed/candidates_cache.pkl
 ```
 
@@ -104,7 +105,7 @@ india_runs_track1/
 
 *Methodology Note on Dataset Artifacts*: During our analysis, we noticed a ~30% rate of candidates having byte-for-byte identical role descriptions within their own careers. A deep dive revealed this is a global synthetic dataset artifact: the LLM generator utilized a fixed pool of 44 templates clustered tightly by industry domain. We chose to drop "duplicate descriptions" as a signal, proving our commitment to clean, rigorously-tested heuristics over naive anomaly flagging!
 
-**Two-Stage Architecture**: To hit the 5-minute CPU constraint, we don't brute-force Python loops. We utilize NumPy's C-backend to compute exact semantic cosine similarities in sub-second times, filtering the 100,000 pool down to an elite 2,000 candidate shortlist. The expensive 12-signal evaluation engine runs *only* on the shortlist, enabling a blazing fast **35-second** total runtime.
+**Two-Stage Architecture**: To hit the 5-minute CPU constraint, we don't brute-force Python loops. We utilize NumPy's C-backend to compute exact semantic cosine similarities in sub-second times, coupled with a fast BM25 lexical pass. This filters the 100,000 pool down to an elite 5,000 candidate shortlist. The expensive 12-signal evaluation engine runs *only* on the shortlist, enabling a fast runtime well under the strict limit.
 
 **Complete JD Alignment**: A candidate who has the right skills but works at a massive IT services firm, or hasn't responded to recruiters in a year, is heavily penalized. Our comprehensive 12-signal behavioral multiplier perfectly mirrors what human recruiters actually care about.
 

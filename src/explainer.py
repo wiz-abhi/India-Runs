@@ -44,9 +44,9 @@ class ExplainerEngine:
 
         # 3. Semantic / Domain
         sem = scores.semantic_similarity
-        if sem >= 0.70 and not is_borderline:
+        if sem >= 0.55 and not is_borderline:
             reasons.append("High semantic relevance to the ranking/retrieval domain.")
-        elif sem >= 0.50:
+        elif sem >= 0.35:
             reasons.append("Moderate semantic match to the core JD.")
 
         if scores.career_evidence >= 0.7 and not is_borderline:

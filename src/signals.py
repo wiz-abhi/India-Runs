@@ -8,8 +8,10 @@ combining semantic, behavioral, and India-specific heuristics.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, date
 from typing import Dict, List
+
+REFERENCE_DATE = date(2026, 6, 22)
 
 from src.jd_parser import JobDescription
 from src.profile_parser import CandidateProfile
@@ -192,7 +194,7 @@ class SignalComputer:
         # 1. Recency
         last_active = profile.last_active
         if last_active:
-            days_ago = (datetime.now() - last_active).days
+            days_ago = (REFERENCE_DATE - last_active.date()).days
             if days_ago <= 60:
                 mult += self._behav_cfg.get("active_within_60d_bonus", 0.1)
             elif days_ago > 365:

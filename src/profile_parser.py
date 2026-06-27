@@ -7,8 +7,10 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, date
 from typing import Any, Dict, List, Optional
+
+REFERENCE_DATE = date(2026, 6, 22)
 
 import pandas as pd
 
@@ -154,7 +156,7 @@ class ProfileParser:
         skills_val = raw.get("skills", [])
         skills = []
         skill_recency: Dict[str, int] = {}
-        current_year = datetime.now().year
+        current_year = REFERENCE_DATE.year
         
         if isinstance(skills_val, str):
             # Flat CSV

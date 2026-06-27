@@ -45,12 +45,12 @@ compute:
 # ============================================================================
 ai_tools_used:
   - "Gemini (DeepMind Antigravity)"
-  - "OpenAI Codex"
+  - "Claude (Anthropic)"
 
 ai_usage_summary: |
   Used DeepMind's Antigravity (Gemini) for initial architecture, repository structuring,
-  and pipeline design. Used OpenAI Codex for evidence-first scoring refinements,
-  skill claim validation, career stability signals, and advanced honeypot detection.
+  and pipeline design. Used Claude for external code review, BM25 retrieval strategy,
+  and fixing determinism bugs to ensure strict spec compliance.
 
 # ============================================================================
 # Approach summary (optional but recommended)
@@ -63,7 +63,8 @@ methodology_summary: |
   sentence-transformers (all-MiniLM-L6-v2). Cache to disk as candidates_cache.pkl.
 
   Step 2 — Rank (timed): Load cache, compute cosine similarity against a rich JD
-  embedding, then score each candidate across 12 weighted signals:
+  embedding alongside a BM25 lexical retrieval pass over career descriptions. The
+  combined shortlist of candidates is then scored across 12 weighted signals:
     - Career evidence (retrieval/ranking/production keywords in role history)
     - Skill evidence (validated by duration, proficiency, endorsements, assessments)
     - Semantic similarity, skill-name match, experience fit, domain alignment
