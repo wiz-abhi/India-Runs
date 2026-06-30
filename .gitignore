@@ -49,3 +49,6 @@ Thumbs.db
 
 # Environment
 .env
+
+# Model weights (downloaded offline; not committed — large binary files)
+models/

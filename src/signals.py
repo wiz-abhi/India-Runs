@@ -82,6 +82,8 @@ class SignalScores:
     base_score: float = 0.0
     behavioral_multiplier: float = 1.0
     composite_score: float = 0.0
+    cross_encoder_score: float = -1.0   # -1 means CE was not run
+    skill_corroboration: float = 0.0    # fraction of claimed skills corroborated by career text
 
     def to_dict(self) -> Dict[str, float]:
         """Return all scores as a dictionary."""
@@ -146,18 +148,20 @@ class SignalComputer:
         scores.product_company_fit = self.product_company_fit_score(profile)
         scores.work_mode_fit = self.work_mode_fit_score(profile)
         scores.education_tier_bonus = self.education_tier_bonus(profile.education_tier)
+        scores.skill_corroboration = self.skill_corroboration_score(profile, jd)
 
         w = self._weights
         base = (
-            w.get("semantic_similarity", 0.18) * scores.semantic_similarity
-            + w.get("skill_match", 0.08) * scores.skill_match
-            + w.get("skill_evidence", 0.12) * scores.skill_evidence
+            w.get("semantic_similarity", 0.15) * scores.semantic_similarity
+            + w.get("skill_match", 0.07) * scores.skill_match
+            + w.get("skill_evidence", 0.10) * scores.skill_evidence
+            + w.get("skill_corroboration", 0.06) * scores.skill_corroboration
             + w.get("career_evidence", 0.28) * scores.career_evidence
             + w.get("experience_fit", 0.10) * scores.experience_fit
-            + w.get("domain_alignment", 0.08) * scores.domain_alignment
-            + w.get("culture_fit", 0.06) * scores.culture_fit
+            + w.get("domain_alignment", 0.07) * scores.domain_alignment
+            + w.get("culture_fit", 0.05) * scores.culture_fit
             + w.get("location_fit", 0.05) * scores.location_fit
-            + w.get("skill_recency", 0.05) * scores.skill_recency
+            + w.get("skill_recency", 0.04) * scores.skill_recency
             + w.get("career_stability", 0.06) * scores.career_stability
             + w.get("product_company_fit", 0.07) * scores.product_company_fit
             + w.get("work_mode_fit", 0.02) * scores.work_mode_fit
@@ -318,6 +322,49 @@ class SignalComputer:
             prof = proficiency.get(str(skill.get("proficiency", "")).lower(), 0.0)
             evidence.append(0.4 * duration + 0.25 * prof + 0.15 * endorsed + 0.2 * assessed)
         return sum(sorted(evidence, reverse=True)[:6]) / 6.0
+
+    def skill_corroboration_score(self, profile: CandidateProfile, jd: JobDescription) -> float:
+        """Caliber-style skill gate: skills only earn credit if career descriptions corroborate them.
+
+        A candidate listing 'pinecone' as a skill earns no credit if none of their role
+        descriptions mention vector databases. This naturally sinks keyword stuffers.
+        """
+        required = {_canonicalize_skill(s) for s in jd.required_skills}
+        claimed_required = [
+            s for s in profile.skills
+            if _canonicalize_skill(s) in required
+        ]
+        if not claimed_required:
+            return 0.0
+
+        # Career description corpus for this candidate
+        desc_text = " ".join(profile.career_history_desc).lower()
+
+        # Synonyms for key terms we look for in descriptions
+        CORROBORATION_TERMS = {
+            "retrieval": ["retrieval", "search", "recall", "fetch", "index"],
+            "ranking": ["ranking", "rank", "rerank", "ltr", "learning to rank"],
+            "embedding": ["embedding", "embed", "vector", "encode", "encode"],
+            "semantic": ["semantic", "meaning", "intent", "similarity"],
+            "recommendation": ["recommendation", "recommend", "suggest", "collaborative"],
+            "faiss": ["faiss", "vector index", "ann", "approximate nearest"],
+            "pinecone": ["pinecone", "vector db", "vector database"],
+            "qdrant": ["qdrant", "vector store", "vector search"],
+            "weaviate": ["weaviate", "vector search"],
+            "milvus": ["milvus", "vector database"],
+            "elasticsearch": ["elasticsearch", "elastic", "search engine"],
+            "sentence-transformers": ["sentence-transformers", "sbert", "bi-encoder"],
+            "python": ["python"],
+        }
+
+        corroborated = 0
+        for skill in claimed_required:
+            canonical = _canonicalize_skill(skill)
+            terms = CORROBORATION_TERMS.get(canonical, [canonical.lower()])
+            if any(t in desc_text for t in terms):
+                corroborated += 1
+
+        return corroborated / len(claimed_required)
 
     def location_fit_score(self, profile: CandidateProfile) -> float:
         location = profile.location.lower()

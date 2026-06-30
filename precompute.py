@@ -8,6 +8,22 @@ from src.profile_parser import ProfileParser
 from src.embeddings import EmbeddingEngine
 
 
+def download_cross_encoder(model_dir: str = "models/cross_encoder"):
+    """Download and cache the cross-encoder model for offline use at rank time."""
+    out_dir = Path(model_dir)
+    if out_dir.exists():
+        print(f"Cross-encoder already cached at '{out_dir}', skipping download.")
+        return
+
+    print(f"Downloading cross-encoder model to '{out_dir}'...")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    from sentence_transformers import CrossEncoder
+    ce = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", max_length=512)
+    ce.save(str(out_dir))
+    print(f"Cross-encoder cached to '{out_dir}'.")
+
+
 def run_precompute(input_path: str, output_path: str, batch_size: int = 512):
     print(f"Starting pre-computation from {input_path}")
     start_time = time.time()
@@ -66,6 +82,9 @@ def run_precompute(input_path: str, output_path: str, batch_size: int = 512):
     with open(output_path, "wb") as f:
         pickle.dump(cache_data, f)
 
+    # Download the cross-encoder model offline so rank.py can use it without network
+    download_cross_encoder()
+
     print(f"Pre-computation finished in {time.time() - start_time:.2f}s total.")
 
 
@@ -76,3 +95,4 @@ if __name__ == "__main__":
     parser.add_argument("--out", type=str, default="data/processed/candidates_cache.pkl")
     args = parser.parse_args()
     run_precompute(args.candidates, args.out)
+

@@ -58,21 +58,72 @@ LTR, fine-tuning (LoRA/QLoRA/PEFT), or distributed systems a strong plus.
         f"Loaded {len(profiles)} candidates. Loading model '{model_name}' for JD embedding..."
     )
     model = SentenceTransformer(model_name)
-    jd_embedding = model.encode(jd_embedding_text, normalize_embeddings=True)
 
-    print("Computing semantic similarities (vectorized)...")
-    # embeddings and jd_embedding are both normalized
-    jd_norm = np.asarray(jd_embedding, dtype=np.float32)
+    # ── Aspect-based JD embeddings ──────────────────────────────────────────────
+    # Instead of one coarse JD embedding, we decompose the JD into 6 focused
+    # aspect queries. Each retrieves independently; RRF fuses the rankings.
+    # This surfaces "hidden gems" who are strong in NLP/IR but don't use buzzwords.
+    JD_ASPECTS = {
+        "retrieval_search": (
+            "embeddings retrieval vector search dense FAISS Pinecone Weaviate Qdrant Milvus "
+            "semantic search approximate nearest neighbor ANN index hybrid search"
+        ),
+        "ranking_eval": (
+            "ranking reranking evaluation NDCG MRR MAP A/B testing offline-to-online "
+            "learning to rank LTR cross-encoder bi-encoder retrieval quality"
+        ),
+        "nlp_ir": (
+            "NLP natural language processing information retrieval language models transformers "
+            "BERT sentence-transformers text understanding fine-tuning"
+        ),
+        "production_recency": (
+            "production deployment shipped real users scale live system serving "
+            "inference pipeline engineering MLOps"
+        ),
+        "product_company": (
+            "product company SaaS startup internet e-commerce fintech shipped users "
+            "ownership product thinking"
+        ),
+        "location_availability": (
+            "India Pune Noida Bangalore immediate notice period available joining"
+        ),
+    }
+
+    print("Computing aspect-based JD embeddings...")
+    aspect_embeddings = {
+        name: model.encode(text, normalize_embeddings=True)
+        for name, text in JD_ASPECTS.items()
+    }
+
+    print("Computing per-aspect semantic similarities (vectorized)...")
     prof_norms = np.asarray(embeddings, dtype=np.float32)
-    semantic_scores = prof_norms @ jd_norm
+    aspect_scores: dict = {}
+    for name, asp_emb in aspect_embeddings.items():
+        asp_norm = np.asarray(asp_emb, dtype=np.float32)
+        aspect_scores[name] = prof_norms @ asp_norm
 
+    # Weighted aggregate semantic score for signal computation
+    ASPECT_WEIGHTS = {
+        "retrieval_search": 0.30,
+        "ranking_eval":     0.25,
+        "nlp_ir":           0.20,
+        "production_recency": 0.10,
+        "product_company":  0.08,
+        "location_availability": 0.07,
+    }
+    semantic_scores = sum(
+        ASPECT_WEIGHTS[name] * scores
+        for name, scores in aspect_scores.items()
+    )
+
+    # ── BM25 lexical retrieval ──────────────────────────────────────────────────
     from rank_bm25 import BM25Okapi
 
-    # BM25 query: key terms from the JD
     BM25_QUERY_TERMS = [
         "retrieval", "ranking", "embedding", "semantic", "search", "recommendation",
         "vector", "production", "deployed", "ndcg", "mrr", "evaluation", "faiss",
-        "pinecone", "qdrant", "weaviate", "elasticsearch", "pipeline", "scale"
+        "pinecone", "qdrant", "weaviate", "elasticsearch", "pipeline", "scale",
+        "reranking", "ltr", "cross-encoder", "bi-encoder", "information retrieval",
     ]
 
     def get_description_text(profile):
@@ -81,18 +132,32 @@ LTR, fine-tuning (LoRA/QLoRA/PEFT), or distributed systems a strong plus.
     print("Building BM25 index over career descriptions...")
     corpus = [get_description_text(p).split() for p in profiles]
     bm25 = BM25Okapi(corpus)
-    bm25_scores = bm25.get_scores(BM25_QUERY_TERMS)
+    bm25_scores_raw = np.array(bm25.get_scores(BM25_QUERY_TERMS), dtype=np.float32)
 
-    # TWO-STAGE RETRIEVAL: Combine semantic similarity + lexical matching
-    TOP_K = 2500
-    print(f"Filtering top {TOP_K} semantic and {TOP_K} lexical candidates...")
-    
-    # argpartition is faster than argsort for just getting top K
-    semantic_top = set(np.argpartition(-semantic_scores, min(TOP_K, len(profiles)) - 1)[:min(TOP_K, len(profiles))])
-    bm25_top = set(np.argpartition(-bm25_scores, min(TOP_K, len(profiles)) - 1)[:min(TOP_K, len(profiles))])
-    top_k_indices = list(semantic_top | bm25_top)
-    print(f"Union shortlist size: {len(top_k_indices)} candidates")
-    
+    # ── Reciprocal Rank Fusion ─────────────────────────────────────────────────
+    # RRF is scale-free: only rank positions matter, avoiding normalization hacks.
+    # score(id) = Σ 1/(k + rank_R(id)) over each ranking R
+    SHORTLIST_SIZE = 800
+    RRF_K = 60
+
+    print(f"Fusing semantic + BM25 with RRF (k={RRF_K}), shortlist={SHORTLIST_SIZE}...")
+    n = len(profiles)
+    rrf_scores = np.zeros(n, dtype=np.float64)
+
+    # Semantic ranking contribution
+    sem_order = np.argsort(-semantic_scores)
+    for rank, idx in enumerate(sem_order):
+        rrf_scores[idx] += 1.0 / (RRF_K + rank + 1)
+
+    # BM25 ranking contribution
+    bm25_order = np.argsort(-bm25_scores_raw)
+    for rank, idx in enumerate(bm25_order):
+        rrf_scores[idx] += 1.0 / (RRF_K + rank + 1)
+
+    top_k_indices = np.argpartition(-rrf_scores, SHORTLIST_SIZE - 1)[:SHORTLIST_SIZE]
+    print(f"RRF shortlist size: {len(top_k_indices)} candidates")
+
+    # ── Full 12-signal scoring on the shortlist ─────────────────────────────────
     print("Computing behavioral signals and final composites for shortlist...")
     computer = SignalComputer()
     scored_candidates = []
@@ -101,12 +166,19 @@ LTR, fine-tuning (LoRA/QLoRA/PEFT), or distributed systems a strong plus.
         profile = profiles[i]
         sim = float(semantic_scores[i])
         scores = computer.compute_all(profile, jd, sim)
-        # Round to 4 decimal places so the sort order matches what validate_submission.py sees
         scored_candidates.append((scores.composite_score, profile.candidate_id, profile, scores))
 
     # Sort: Primary by score (descending), Secondary by candidate_id (ascending)
     print("Sorting candidates...")
     scored_candidates.sort(key=lambda x: (-x[0], x[1]))
+
+    # ── Cross-encoder rerank (head of the shortlist) ────────────────────────────
+    # Rerank the top 200 by running full cross-attention over (JD, candidate) pairs.
+    # This separates real retrieval/ranking career substance from keyword stuffers.
+    from src.cross_encoder import rerank as ce_rerank
+    print("Running cross-encoder rerank on top 200...")
+    scored_candidates = ce_rerank(jd_embedding_text, scored_candidates, top_n=200, ce_weight=0.10)
+
 
     print("Running honeypot detection on top candidates...")
     detector = HoneypotDetector()
