@@ -21,8 +21,8 @@ team_members:
 # ============================================================================
 # Code and reproducibility
 # ============================================================================
-github_repo: "https://github.com/wiz-abhi/indiaruns"
-sandbox_link: "https://india-runs-hack.streamlit.app"
+github_repo: "https://github.com/wiz-abhi/TruRank"
+sandbox_link: "https://trurank-indiaruns.streamlit.app/"
 
 reproduce_command: "python rank.py"
 

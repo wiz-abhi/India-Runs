@@ -1,5 +1,5 @@
 """
-Comprehensive test suite for the IndiaRanks ranking pipeline.
+Comprehensive test suite for the TruRank ranking pipeline.
 
 Tests cover: signal computation, behavioral multiplier, honeypot detection,
 cross-encoder module, RRF fusion logic, submission validation, determinism,

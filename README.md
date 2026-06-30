@@ -1,8 +1,7 @@
-# 🇮🇳 IndiaRanks — Intelligent Candidate Discovery & Ranking
+# 🇮🇳 TruRank — Intelligent Candidate Discovery & Ranking
 
 **An AI that ranks 100,000 candidates the way a great recruiter would — by understanding genuine *fit*, not matching keywords.**
-
-IndiaRanks is our entry to the Redrob **"India Runs" Track 1 — Intelligent Candidate Discovery & Ranking Challenge**. Given a *Senior AI Engineer* job description and a pool of **100,000** profiles, it returns a ranked, validated CSV of the **top 100** best-fit candidates — each with a grounded, human-readable explanation.
+TruRank is our entry to the Redrob **"India Runs" Track 1 — Intelligent Candidate Discovery & Ranking Challenge**. Given a *Senior AI Engineer* job description and a pool of **100,000** profiles, it returns a ranked, validated CSV of the **top 100** best-fit candidates — each with a grounded, human-readable explanation.
 
 The scoring is dominated by the head of the list:
 `Final = 0.50·NDCG@10 + 0.30·NDCG@50 + 0.15·MAP + 0.05·P@10`. Getting the top ~50 surgically right is the whole game.
@@ -13,7 +12,7 @@ The scoring is dominated by the head of the list:
 
 The dataset is **adversarial by design** — it punishes the naive "embed the JD, embed each profile, sort by cosine" baseline. Four traps are planted:
 
-| Trap | Signature | How IndiaRanks beats it |
+| Trap | Signature | How TruRank beats it |
 |---|---|---|
 | **Keyword stuffer** | Non-tech title + many AI skills | Skill credit is *gated* behind career substance — skills only count if role descriptions corroborate them |
 | **Plain-language hidden gem** | Genuine fit, zero buzzwords | 6 aspect-based semantic queries + BM25 over role *descriptions* surfaces them |
@@ -149,7 +148,7 @@ python rank.py --candidates data/raw/candidates.jsonl --cache data/processed/can
 
 A beautifully themed, interactive dashboard to visualize the top candidates, their semantic match, signal breakdown, honeypot detection, and generated reasoning.
 
-🔗 **Streamlit Cloud Sandbox:** [https://india-runs-hack.streamlit.app](https://india-runs-hack.streamlit.app)
+🔗 **Streamlit Cloud Sandbox:** [https://trurank-indiaruns.streamlit.app/](https://trurank-indiaruns.streamlit.app/)
 
 To run it locally:
 ```bash

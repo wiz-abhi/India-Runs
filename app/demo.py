@@ -1,5 +1,5 @@
 """
-Streamlit demo — IndiaRanks · Intelligent Candidate Ranking System
+Streamlit demo — TruRank · Intelligent Candidate Ranking System
 India Runs by Redrob AI · Track 1: Data & AI Challenge
 
 Run with:
@@ -31,7 +31,7 @@ from src.utils import load_config
 
 # ── Page config ──────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="IndiaRanks · Intelligent Candidate Ranking",
+    page_title="TruRank · Intelligent Candidate Ranking",
     page_icon="🇮🇳",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -355,7 +355,7 @@ def load_model():
 
 # ── SIDEBAR ──────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### 🇮🇳 IndiaRanks")
+    st.markdown("### 🇮🇳 TruRank")
     st.markdown(
         '<span style="color:#8888aa;font-size:0.78rem;font-weight:500;">'
         'Evidence-First Candidate Ranking Engine</span>',
@@ -408,7 +408,7 @@ with st.sidebar:
 # ── HERO ─────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="hero-container">
-    <div class="hero-title">IndiaRanks</div>
+    <div class="hero-title">TruRank</div>
     <div class="hero-subtitle">
         Semantic AI · 12-Signal Scoring · Honeypot Detection · Behavioral Intelligence
     </div>
