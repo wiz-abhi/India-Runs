@@ -196,9 +196,14 @@ class SignalComputer:
 
         return scores
 
-    # ── Behavioral Multiplier (23 Redrob signals, bounded 0.50–1.15×) ────────
+    # ── Behavioral Multiplier (20 Redrob signals, bounded 0.50–1.15×) ────────
     def behavioral_multiplier(self, profile: CandidateProfile) -> float:
-        """Compute a bounded multiplier based on 23 Redrob signals.
+        """Compute a bounded multiplier based on 20 Redrob signals.
+
+        Every signal name here matches the dataset's redrob_signals schema
+        (see redrob_signals_doc). skill_assessment_scores is consumed in
+        skill_evidence, and expected_salary/signup_date are read elsewhere,
+        so all 23 published signals are used across the pipeline.
 
         Range is deliberately asymmetric: floor 0.50 (heavily penalize unavailable),
         ceiling 1.15 (mildly reward highly active). This matches Caliber's design:
@@ -313,51 +318,39 @@ class SignalComputer:
         if work_mode in ("hybrid", "flexible"):
             mult += 0.03
 
-        # 15. Applications sent (engagement signal)
-        apps = signals.get("applications_sent_30d", 0)
+        # 15. Applications submitted (engagement signal)
+        apps = signals.get("applications_submitted_30d", 0)
         if apps >= 10:
             mult += 0.04
         elif apps == 0:
             mult -= 0.04
 
-        # 16. Profile views (market interest)
-        views = signals.get("profile_views_30d", 0)
+        # 16. Profile views received (market interest)
+        views = signals.get("profile_views_received_30d", 0)
         if views >= 20:
             mult += 0.04
 
-        # 17. Certifications count
-        certs = signals.get("certifications_count", 0)
-        if certs >= 3:
+        # 17. Search appearances (recruiter-search visibility)
+        appearances = signals.get("search_appearance_30d", 0)
+        if appearances >= 20:
             mult += 0.03
 
-        # 18. Endorsements received
-        endorsements = signals.get("endorsements_received_total", 0)
+        # 18. Endorsements received (community validation)
+        endorsements = signals.get("endorsements_received", 0)
         if endorsements >= 30:
             mult += 0.03
 
-        # 19. Referral available
-        if signals.get("referral_available", False):
+        # 19. Connection count (established network on the platform)
+        connections = signals.get("connection_count", 0)
+        if connections >= 100:
+            mult += 0.02
+
+        # 20. Offer-acceptance reliability (-1 = no prior offers → neutral)
+        offer_rate = signals.get("offer_acceptance_rate", -1)
+        if offer_rate >= 0.8:
             mult += 0.03
-
-        # 20. Expected salary alignment (if provided)
-        salary_match = signals.get("salary_expectation_match", None)
-        if salary_match is not None:
-            if salary_match < 0.6:
-                mult -= 0.05
-
-        # 21. Last job change recency
-        months_in_current = signals.get("months_in_current_role", 0)
-        if 6 <= months_in_current <= 12:
-            mult -= 0.04  # just joined, unlikely to move
-
-        # 22. Portfolio/projects linked
-        if signals.get("portfolio_linked", False):
-            mult += 0.03
-
-        # 23. Screening completion
-        screening = signals.get("screening_completion_rate", 1.0)
-        if screening < 0.3:
-            mult -= 0.08
+        elif 0 <= offer_rate < 0.3:
+            mult -= 0.05  # accepts few offers → flaky / low intent
 
         # Bounded: availability should re-rank but never manufacture or erase relevance.
         return clamp(mult, lo=0.50, hi=1.15)
@@ -694,23 +687,28 @@ class SignalComputer:
         return self._edu_tiers.get(tier, {}).get("bonus", 0.0)
 
     def external_validation_score(self, profile: CandidateProfile) -> float:
+        """External / community validation the JD asks for ('papers, talks,
+        OSS'), using the proxies actually present in the dataset: GitHub
+        activity, skill endorsements, and recruiter demand (saved profiles).
         """
-        Score based on GitHub activity, OSS contribution, or StackOverflow rep.
-        Mirrors Caliber's external_validation feature.
-        """
+        sig = profile.redrob_signals
         score = 0.0
-        github_score = profile.redrob_signals.get("github_activity_score", 0)
+
+        github_score = sig.get("github_activity_score", -1)
         if github_score > 70:
-            score += 1.0
+            score += 0.6
         elif github_score > 40:
-            score += 0.5
-        
-        if profile.redrob_signals.get("open_source_contributor", False):
-            score += 0.5
-            
-        if profile.redrob_signals.get("stackoverflow_reputation", 0) > 1000:
-            score += 0.5
-            
+            score += 0.3
+
+        endorsements = sig.get("endorsements_received", 0)
+        if endorsements >= 50:
+            score += 0.25
+        elif endorsements >= 20:
+            score += 0.1
+
+        if sig.get("saved_by_recruiters_30d", 0) >= 10:
+            score += 0.15
+
         return clamp(score, 0.0, 1.0)
 
     def production_recency_score(self, profile: CandidateProfile) -> float:

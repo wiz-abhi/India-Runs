@@ -16,7 +16,7 @@ The dataset is **adversarial by design** — it punishes the naive "embed the JD
 |---|---|---|
 | **Keyword stuffer** | Non-tech title + many AI skills | Skill credit is *gated* behind career substance — skills only count if role descriptions corroborate them |
 | **Plain-language hidden gem** | Genuine fit, zero buzzwords | 6 aspect-based semantic queries + BM25 over role *descriptions* surfaces them |
-| **Behavioral twin** | Identical résumé, different availability | Bounded behavioral multiplier (0.65×–1.0×) separates them |
+| **Behavioral twin** | Identical résumé, different availability | Bounded behavioral multiplier (0.50×–1.15×) separates them |
 | **Honeypot (~80+)** | Internally-impossible profile | Consistency detector floors them to score = 0 |
 
 ---
@@ -41,7 +41,7 @@ The dataset is **adversarial by design** — it punishes the naive "embed the JD
  │                                                                     │
  │  STAGE 2 — Deep Scoring                                             │
  │    ├─ 13 structured signals (skill-gated, corroboration-checked)    │
- │    ├─ Behavioral multiplier (12 Redrob signals, bounded)            │
+ │    ├─ Behavioral multiplier (20 Redrob signals, bounded)            │
  │    ├─ Cross-encoder rerank (ms-marco-MiniLM-L-6-v2, top 200)       │
  │    └─ Honeypot detection ──► score floor                            │
  │                                                                     │
@@ -84,7 +84,7 @@ The shortlist is scored with **15 structured signals** (now including external v
 - `skill_recency` (0.046) — freshness of relevant skills
 - `career_stability` (0.039) — sustained delivery vs title chasing
 - `skill_corroboration` (0.032) — skills backed by career descriptions
-- `external_validation` (0.029) — ⭐ GitHub, OSS, StackOverflow
+- `external_validation` (0.029) — ⭐ GitHub activity, skill endorsements, recruiter demand
 - `culture_fit` (0.019) — culture signal alignment
 - `skill_match` (0.014) — JD-required skill coverage
 
@@ -106,7 +106,7 @@ Measured on the full **100,000**-candidate pool:
 | Shortlist (RRF-fused) | **800** candidates |
 | Cross-encoder rerank | **200** pairs (the head, where NDCG lives) |
 | CE score range | **0.087 – 0.993** (excellent discrimination) |
-| Behavioral multiplier range | **0.50× – 1.15×** (23 Redrob signals) |
+| Behavioral multiplier range | **0.50× – 1.15×** (20 Redrob signals; all 23 consumed across pipeline) |
 | Silver-label NDCG@10 | **0.952** (sweep-optimized, +8.3% vs hand-tuned) |
 | Test suite | **67 tests passing** |
 | Offline precompute | **~45 min** for 100K on CPU (one-time) |
@@ -141,6 +141,26 @@ python rank.py --candidates data/raw/candidates.jsonl --cache data/processed/can
 > `rank.py` hard-locks the network off (`HF_HUB_OFFLINE`, `TRANSFORMERS_OFFLINE`)
 > before any model import, so a stray fetch errors out rather than silently
 > hitting the hub — a Stage-3 disqualifier.
+
+> **⚠️ Artifacts are not committed.** The embedding cache
+> (`data/processed/candidates_cache.pkl`, ~578 MB) and the cross-encoder weights
+> (`models/cross_encoder/`, ~87 MB) are `.gitignore`d because they're too large
+> for git. **Step 2 (precompute) must be run before Step 3** — it regenerates both
+> from `candidates.jsonl`. `rank.py` fails loudly if the cache or model is missing.
+> Per `submission_spec` §10.3, shipping the precompute *script* (rather than the
+> artifacts) satisfies the reproducibility requirement.
+
+### Reproduce in Docker (sealed, one command)
+
+The `Dockerfile` chains precompute → rank so a reviewer can reproduce with no
+manual steps. Network is used only during precompute; the ranking step runs offline.
+
+```bash
+docker build -t trurank .
+# Mount the folder holding candidates.jsonl into data/raw, and an output folder:
+docker run --rm -v "$(pwd)/data/raw:/app/data/raw" -v "$(pwd)/out:/app/out" trurank
+# → out/submission.csv
+```
 
 ---
 
@@ -185,6 +205,27 @@ india_runs_track1/
 ├── rank.py                    # Step 2: RRF retrieval + CE rerank + ranking
 └── submission.csv             # Final generated output
 ```
+
+---
+
+## Validation & Methodology
+
+There is **no live leaderboard** — scoring happens once against hidden labels after
+submissions close. So we validated by *methodology*, not by submitting variants:
+
+- **Signal-name audit.** Every `redrob_signals` key the code reads is checked against
+  the 23 names in `redrob_signals_doc` / `candidate_schema.json`. An earlier version
+  silently read 11 misspelled/nonexistent keys (e.g. `applications_sent_30d` instead
+  of `applications_submitted_30d`) — those branches were dead. All 20 behavioral-
+  multiplier signals now bind to real fields; the fix reshuffled 13 of the top 100.
+- **Validator-clean.** `python tests/validate_submission.py submission.csv` passes:
+  exactly 100 rows, ranks 1–100 unique, scores monotonically non-increasing, all
+  candidate_ids exist, no empty reasoning.
+- **Honeypot audit.** Deterministic severity scoring keeps 0 honeypots in the top 100
+  (Stage-3 disqualifier is >10%).
+- **What we tried and dropped.** A larger cross-encoder (`ms-marco-MiniLM-L-12`) added
+  latency without moving silver-label NDCG; a coarser 2-ranking RRF underperformed the
+  8-ranking fusion. We kept the simpler/faster variant where the gain was a wash.
 
 ---
 

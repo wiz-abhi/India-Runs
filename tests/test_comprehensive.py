@@ -354,12 +354,12 @@ def test_behavioral_active_candidate_above_1():
         "linkedin_connected": True,
         "willing_to_relocate": True,
         "preferred_work_mode": "hybrid",
-        "applications_sent_30d": 15,
-        "profile_views_30d": 30,
-        "certifications_count": 5,
-        "endorsements_received_total": 50,
-        "referral_available": True,
-        "portfolio_linked": True,
+        "applications_submitted_30d": 15,
+        "profile_views_received_30d": 30,
+        "search_appearance_30d": 40,
+        "endorsements_received": 50,
+        "connection_count": 200,
+        "offer_acceptance_rate": 0.9,
     })
     s = _score(raw)
     assert s.behavioral_multiplier > 1.0
@@ -375,7 +375,7 @@ def test_behavioral_stale_candidate_below_1():
         "interview_completion_rate": 0.1,
         "verified_email": False,
         "verified_phone": False,
-        "screening_completion_rate": 0.1,
+        "offer_acceptance_rate": 0.1,
     })
     s = _score(raw)
     assert s.behavioral_multiplier < 0.7
@@ -391,7 +391,7 @@ def test_behavioral_floor_is_050():
         "interview_completion_rate": 0.0,
         "verified_email": False,
         "verified_phone": False,
-        "screening_completion_rate": 0.0,
+        "offer_acceptance_rate": 0.0,
         "avg_response_time_hours": 500,
     })
     s = _score(raw)
@@ -414,12 +414,12 @@ def test_behavioral_ceiling_is_115():
         "linkedin_connected": True,
         "willing_to_relocate": True,
         "preferred_work_mode": "hybrid",
-        "applications_sent_30d": 50,
-        "profile_views_30d": 100,
-        "certifications_count": 10,
-        "endorsements_received_total": 100,
-        "referral_available": True,
-        "portfolio_linked": True,
+        "applications_submitted_30d": 50,
+        "profile_views_received_30d": 100,
+        "search_appearance_30d": 80,
+        "endorsements_received": 100,
+        "connection_count": 500,
+        "offer_acceptance_rate": 1.0,
     })
     s = _score(raw)
     assert s.behavioral_multiplier <= 1.15

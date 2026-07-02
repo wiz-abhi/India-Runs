@@ -1,0 +1,25 @@
+# Keep the build context small — the image rebuilds the cache/models itself.
+venv/
+.venv/
+env/
+__pycache__/
+**/__pycache__/
+*.pyc
+.git/
+.pytest_cache/
+data/processed/*
+!data/processed/.gitkeep
+data/raw/candidates.jsonl
+embeddings_cache/
+models/
+outputs/
+Provided_Dataset/
+*.log
+app/
+improvements/
+tests/
+tools/
+.streamlit/
+.agents/
+submission.csv
+*.md
